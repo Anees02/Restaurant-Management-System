@@ -58,6 +58,7 @@ CREATE TABLE OrderItem (
 );
 
 -- Insert sample employees
+
 INSERT INTO Employee (employeename, emailid, employeetype, password) VALUES
 ('waiter1', 'waiter1@example.com', 'WAITER', 'pass123'),
 ('Anees', 'anees@example.com', 'WAITER', 'pass123'),
