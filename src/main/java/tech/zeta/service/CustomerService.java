@@ -12,9 +12,9 @@ public class CustomerService {
     customerRepository = CustomerRepository.getInstance();
   }
 
-  public boolean addCustomer(String name, String contactNumber, String mailId, String password){
-    if(!customerRepository.isUserAlreadyExists(mailId)) {
-      boolean result = customerRepository.addCustomer(name, contactNumber, mailId,password);
+  public boolean addCustomer(Customer customer){
+    if(!customerRepository.isUserAlreadyExists(customer.getCustomerMailId())) {
+      boolean result = customerRepository.addCustomer(customer);
       return result;
     }
     else{

@@ -23,7 +23,6 @@ public class PostgresDBConnection implements DBConnection {
       String password = config.getProperty("password");
 
       connection = DriverManager.getConnection(database_url, username, password);
-      log.info("Connection Created Successfully");
     } catch (SQLException | IOException exception){
       log.error(exception.getMessage());
       exception.printStackTrace();

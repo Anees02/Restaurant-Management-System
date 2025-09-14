@@ -9,8 +9,8 @@ import tech.zeta.entity.enums.ItemStatus;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderItem {
-  private int foodItemId;
   private int orderId;
+  private int foodItemId;
   private int quantity;
   private int quantityToPrepare;
   private double price;

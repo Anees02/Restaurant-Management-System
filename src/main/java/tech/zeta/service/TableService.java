@@ -34,4 +34,14 @@ public class TableService {
   public List<int[]> giveAvailableTables(){
     return tableRepository.giveAvailableTables();
   }
+
+  public boolean checkTableIsBookedOrOccupied(int tableId){
+    TableStatus tableStatus =  tableRepository.giveTableStatus(tableId);
+    return tableStatus == TableStatus.BOOKED || tableStatus == TableStatus.OCCUPIED;
+  }
+
+  public int giveCustomerId(int tableId){
+    return checkTableIsBookedOrOccupied(tableId) ? tableRepository.getCustomerId(tableId) : -1;
+  }
+
 }

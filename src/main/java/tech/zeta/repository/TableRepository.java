@@ -31,10 +31,9 @@ public class TableRepository {
 
 
   public TableStatus giveTableStatus(int tableId){
-    String tableAvailable = "SELECT tableId, tableStatus FROM RestaurantTable WHERE tableId = ? AND tableStatus = ?";
+    String tableAvailable = "SELECT tableStatus FROM RestaurantTable WHERE tableId = ?";
     try(PreparedStatement preparedStatement = connection.prepareStatement(tableAvailable)){
       preparedStatement.setInt(1,tableId);
-      preparedStatement.setString(2, TableStatus.AVAILABLE.name());
       ResultSet resultSet = preparedStatement.executeQuery();
       if(resultSet.next()){
 
@@ -103,6 +102,33 @@ public class TableRepository {
     }
 
     return false;
+  }
+
+  public int getCustomerId(int tableId){
+    String updateSql = "select customerId from restauranttable where tableId = ?";
+    try (PreparedStatement preparedStatement = connection.prepareStatement(updateSql)) {
+      preparedStatement.setInt(1, tableId);
+
+
+      ResultSet resultSet = preparedStatement.executeQuery();
+      if (resultSet.next()) {
+        return resultSet.getInt("customerId");
+      }
+    } catch (SQLException sqlException) {
+      log.error(sqlException.getMessage());
+    }
+
+    return -1;
+  }
+
+
+
+  public void closeConnection(){
+    try {
+      connection.close();
+    } catch (SQLException error) {
+      log.error("Failed to Close Connection {}",error.getMessage());
+    }
   }
 
 }

@@ -29,7 +29,7 @@ public class OrderRepository {
   }
 
   public int createOrder(int customerId, int tableId) {
-    String sql = "insert into orders(tableId, customerId, paymentStatus, totalAmount) values (?, ?, ?, ?)";
+    String sql = "insert into orders(tableId, customerId, paymentStatus, totalAmount) values (?, ?, ?, ?) returning orderId";
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
       ps.setInt(1, tableId);
       ps.setInt(2, customerId);
@@ -49,24 +49,25 @@ public class OrderRepository {
   }
 
   public boolean addItemToOrder(int orderId, int foodItemId, int quantity, double unitPrice) {
-    String queryToAddItem = "insert into OrderItems (orderId, foodId, quantity, price) values (?, ?, ?, ?)";
+    String queryToAddItem = "insert into OrderItem (orderId, foodId, quantity,quantityToPrepare, price) values (?, ?, ?, ?,?)";
 
     try (PreparedStatement ps = connection.prepareStatement(queryToAddItem)) {
       ps.setInt(1, orderId);
       ps.setInt(2, foodItemId);
       ps.setInt(3, quantity);
-      ps.setDouble(4, quantity * unitPrice);
+      ps.setInt(4,quantity);
+      ps.setDouble(5, unitPrice*quantity);
 
       int rows = ps.executeUpdate();
       return rows > 0;
     } catch (SQLException sqlException) {
-      log.error("Error adding item to order {}: {}", orderId, sqlException.getMessage());
+      log.error("Error adding item to orderId {}: {}", orderId, sqlException.getMessage());
     }
     return false;
   }
 
   public boolean updateQuantity(int orderId, int foodItemId, int addedQuantity, double unitPrice){
-    String sql = "update OrderItems set quantity = quantity + ?, quantityToPrepare = quantityToPrepare + ?, price = price + ? " +
+    String sql = "update OrderItem set quantity = quantity + ?, quantityToPrepare = quantityToPrepare + ?, price = price + ? " +
                   "where orderId = ? and foodId = ? and itemStatus = 'PENDING'";
 
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -86,12 +87,12 @@ public class OrderRepository {
   }
 
   public boolean updateStatus(int orderId,int foodItemId, ItemStatus itemStatus){
-    String queryToUpdateStatus = "update OrderItems set quantityToPrepare = 0, itemStatus = ? where orderId = ? and foodId = ?";
+    String queryToUpdateStatus = "update OrderItem set quantityToPrepare = 0, itemStatus = ? where orderId = ? and foodId = ?";
 
     try(PreparedStatement preparedStatement = connection.prepareStatement(queryToUpdateStatus)){
       preparedStatement.setString(1,itemStatus.name());
       preparedStatement.setInt(2, orderId);
-      preparedStatement.setInt(2, foodItemId);
+      preparedStatement.setInt(3, foodItemId);
 
       int rowAffected = preparedStatement.executeUpdate();
       return rowAffected > 0;
@@ -102,7 +103,7 @@ public class OrderRepository {
   }
 
   public boolean isItemAlreadyPresent(int orderId, int  foodItemId){
-    String queryToCheckItem = "select 1 from OrderItems where orderId = ? and foodItemId = ?";
+    String queryToCheckItem = "select 1 from OrderItem where orderId = ? and foodId = ?";
 
     try (PreparedStatement ps = connection.prepareStatement(queryToCheckItem)) {
 
@@ -117,8 +118,32 @@ public class OrderRepository {
     return false;
   }
 
+//  public List<OrderItem> giveAllPendingItems(int orderId){
+//    String queryForOrderItems = "select * from OrderItem where orderId = ? and paymentStatus = 'PENDING'";
+//    try (PreparedStatement preparedStatement = connection.prepareStatement(queryForOrderItems)) {
+//      List<OrderItem> items = new ArrayList<>();
+//      preparedStatement.setInt(1, orderId);
+//      ResultSet rsItems = preparedStatement.executeQuery();
+//
+//      while (rsItems.next()) {
+//        items.add(new OrderItem(
+//                rsItems.getInt("orderId"),
+//                rsItems.getInt("foodId"),
+//                rsItems.getInt("quantity"),
+//                rsItems.getInt("additionquantity"),
+//                rsItems.getDouble("price"),
+//                ItemStatus.valueOf(rsItems.getString("itemStatus"))
+//        ));
+//      }
+//      return items;
+//    } catch (SQLException sqlException) {
+//      log.error(sqlException.getMessage());
+//    }
+//    return null;
+//  }
+
   public List<OrderItem> giveAllOrderItems(int orderId){
-    String queryForOrderItems = "select * from OrderItems where orderId = ?";
+    String queryForOrderItems = "select * from OrderItem where orderId = ?";
     try (PreparedStatement preparedStatement = connection.prepareStatement(queryForOrderItems)) {
       List<OrderItem> items = new ArrayList<>();
       preparedStatement.setInt(1, orderId);
@@ -129,7 +154,7 @@ public class OrderRepository {
                 rsItems.getInt("orderId"),
                 rsItems.getInt("foodId"),
                 rsItems.getInt("quantity"),
-                rsItems.getInt("additionquantity"),
+                rsItems.getInt("quantitytoprepare"),
                 rsItems.getDouble("price"),
                 ItemStatus.valueOf(rsItems.getString("itemStatus"))
         ));
@@ -142,7 +167,7 @@ public class OrderRepository {
   }
 
   public boolean addTotalAmount(int orderId, double totalAmount){
-    String query = "update orders set totalAmount = ?, paymentStatus = ? where orderId = ?";
+    String query = "update orders set totalAmount = ? where orderId = ?";
 
     try(PreparedStatement preparedStatement = connection.prepareStatement(query)){
       preparedStatement.setDouble(1,totalAmount);
@@ -226,6 +251,48 @@ public class OrderRepository {
     }
 
     return 0.0; // in case no sales found
+  }
+  public List<OrderItem> getPendingItems() {
+    String sql = "SELECT * FROM OrderItem WHERE itemStatus = 'PENDING'";
+    List<OrderItem> pendingItems = new ArrayList<>();
+
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ResultSet rs = ps.executeQuery();
+      while (rs.next()) {
+        pendingItems.add(new OrderItem(
+                rs.getInt("orderId"),
+                rs.getInt("foodId"),
+                rs.getInt("quantity"),
+                rs.getInt("quantityToPrepare"),
+                rs.getDouble("price"),
+                ItemStatus.valueOf(rs.getString("itemStatus"))
+        ));
+      }
+    } catch (SQLException e) {
+      log.error("Error fetching pending items: {}", e.getMessage());
+    }
+    return pendingItems;
+  }
+
+  public Integer getOrderIdByTableId(int tableId) {
+    String sql = "SELECT orderId FROM orders WHERE tableId = ? AND paymentStatus = 'PENDING' ORDER BY orderTime DESC LIMIT 1";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.setInt(1, tableId);
+      ResultSet rs = ps.executeQuery();
+      if (rs.next()) {
+        return rs.getInt("orderId");
+      }
+    } catch (SQLException e) {
+      log.error("Error fetching orderId for tableId {}: {}", tableId, e.getMessage());
+    }
+    return null;
+  }
+  public void closeConnection(){
+    try {
+      connection.close();
+    } catch (SQLException error) {
+      log.error("Failed to Close Connection {}",error.getMessage());
+    }
   }
 
 

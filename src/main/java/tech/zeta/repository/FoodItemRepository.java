@@ -51,7 +51,7 @@ public class FoodItemRepository {
   }
 
   public FoodItem getFoodItemById(int foodItemId){
-    String query = "SELECT food_id, food_name, price, is_available FROM FoodItem WHERE foodId = ?";
+    String query = "SELECT food_id, food_name, price, is_available FROM FoodItem WHERE food_id = ?";
     FoodItem food = null;
 
     try (PreparedStatement ps = connection.prepareStatement(query)) {
@@ -109,6 +109,14 @@ public class FoodItemRepository {
     } catch (SQLException e) {
       e.printStackTrace();
       return false;
+    }
+  }
+
+  public void closeConnection(){
+    try {
+      connection.close();
+    } catch (SQLException error) {
+      log.error("Failed to Close Connection {}",error.getMessage());
     }
   }
 }

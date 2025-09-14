@@ -3,6 +3,7 @@ package tech.zeta.service;
 import lombok.extern.slf4j.Slf4j;
 import tech.zeta.entity.Order;
 import tech.zeta.entity.OrderItem;
+import tech.zeta.entity.enums.ItemStatus;
 import tech.zeta.entity.enums.PaymentStatus;
 import tech.zeta.repository.OrderRepository;
 
@@ -18,7 +19,7 @@ public class ManagerService {
   public Order generateBill(int orderId){
 
     List<OrderItem> orderItemList = orderRepository.giveAllOrderItems(orderId);
-    double totalAmount = orderItemList.stream().mapToDouble(OrderItem::getPrice).sum();
+    double totalAmount = orderItemList.stream().filter(a -> a.getItemStatus() == ItemStatus.PREPARED).mapToDouble(OrderItem::getPrice).sum();
     if(orderRepository.addTotalAmount(orderId,totalAmount)){
       return orderRepository.giveOrderDetails(orderId);
     }
@@ -30,4 +31,8 @@ public class ManagerService {
   public boolean makePayment(int orderId){
     return orderRepository.makePayment(orderId, PaymentStatus.COMPLETED);
   }
+  public Integer getOrderIdForTable(int tableId) {
+    return orderRepository.getOrderIdByTableId(tableId);
+  }
+
 }

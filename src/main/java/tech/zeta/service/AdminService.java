@@ -29,4 +29,5 @@ public class AdminService {
   public double getDailySalesReport(LocalDate date){
     return orderRepository.getTotalAmountOnDate(date);
   }
+
 }

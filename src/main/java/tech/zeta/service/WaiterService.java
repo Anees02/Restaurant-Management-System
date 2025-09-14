@@ -20,7 +20,7 @@ public class WaiterService {
     return -1;
   }
 
-  public boolean addOrderItems(int orderId, int foodItemId, int quantity, int unitPrice){
+  public boolean addOrderItem(int orderId, int foodItemId, int quantity, double unitPrice){
     if(!orderRepository.isItemAlreadyPresent(orderId, foodItemId)){
       return orderRepository.addItemToOrder(orderId, foodItemId, quantity, unitPrice);
     }

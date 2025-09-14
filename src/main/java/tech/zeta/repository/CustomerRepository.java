@@ -28,14 +28,14 @@ public class CustomerRepository {
 
 
 
-  public boolean addCustomer(String name, String contactNumber, String mailId, String password){
+  public boolean addCustomer(Customer customer){
     String insertQuery = "insert into customer(customerName, contactNumber, customerMailId, password) values (?,?,?,?);";
     try(PreparedStatement preparedStatement = DBConnection.prepareStatement(insertQuery)) {
 
-      preparedStatement.setString(1,name);
-      preparedStatement.setString(2,contactNumber);
-      preparedStatement.setString(3,mailId);
-      preparedStatement.setString(4,password);
+      preparedStatement.setString(1,customer.getCustomerName());
+      preparedStatement.setString(2,customer.getContactNumber());
+      preparedStatement.setString(3,customer.getCustomerMailId());
+      preparedStatement.setString(4,customer.getPassword());
       int rowsEffected = preparedStatement.executeUpdate();
       return rowsEffected > 0;
 
@@ -91,7 +91,13 @@ public class CustomerRepository {
 
     return false;
   }
-
+  public void closeConnection(){
+    try {
+      DBConnection.close();
+    } catch (SQLException error) {
+      log.error("Failed to Close Connection {}",error.getMessage());
+    }
+  }
 
 
 

@@ -12,7 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Employee {
-  private UUID employeeId;
+  private int employeeId;
   private String employeeName;
   private String emailId;
   private EmployeeType employeeType;
