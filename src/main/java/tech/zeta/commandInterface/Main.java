@@ -2,15 +2,20 @@ package tech.zeta.commandInterface;
 
 
 
-import tech.zeta.entity.Employee;
-import tech.zeta.entity.enums.EmployeeType;
+import lombok.extern.slf4j.Slf4j;
+import tech.zeta.model.Employee;
+import tech.zeta.utils.enums.EmployeeType;
+import tech.zeta.exception.EmployeeNotFoundException;
+import tech.zeta.exception.PasswordIncorrectException;
 import tech.zeta.repository.*;
+import tech.zeta.service.EmployeeService;
+import tech.zeta.utils.EmailValidator;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
+@Slf4j
 public class Main {
   static Scanner scanner = new Scanner(System.in);
 
@@ -22,7 +27,16 @@ public class Main {
       System.out.printf("Choose your login type:%n");
       System.out.printf("\t1. Customer%n\t2. Employee%n\t3. Exit%n");
       System.out.print("Please Enter the Option: ");
-      int option = scanner.nextInt();
+
+
+        int option = -1;
+      try {
+        option  = scanner.nextInt();
+      } catch (InputMismatchException exception) {
+        System.out.println("Please Enter Valid Input!");
+        scanner.nextLine();
+        continue;
+      }
       scanner.nextLine();
       switch (option){
         case 1:
@@ -41,39 +55,53 @@ public class Main {
           OrderRepository.getInstance().closeConnection();
           TableRepository.getInstance().closeConnection();
           return;
+        default:
+          System.out.println("Invalid Option, Please Try Again!");
       }
+
+
 
     }
   }
   public static void employeeLogin(){
-    System.out.println("=== Welcome to Employee Login Page ===");
+    System.out.println("\t=== Welcome to Employee Login Page ===");
     System.out.print("Enter emailId: ");
-    String emailId = scanner.nextLine();
+    String emailId = scanner.nextLine().trim();
+    if(!EmailValidator.isValid(emailId)){
+      System.out.println("Please Enter a Valid EmailId");
+      return;
+    }
     System.out.print("Enter password: ");
     String password = scanner.nextLine();
 
-    EmployeeRepository employeeRepository = EmployeeRepository.getInstance();
-    Employee employee = employeeRepository.getEmployee(emailId, password);
 
-    switch (employee.getEmployeeType()) {
-      case EmployeeType.WAITER :
-        WaiterCLI waiterCLI = new WaiterCLI(employee);
-        waiterCLI.start();
-        break;
-      case EmployeeType.CHEF:
-        ChefCLI chefCLI = new ChefCLI();
-        chefCLI.chefMenu(employee);
-        break;
-      case EmployeeType.MANAGER:
-        ManagerCLI managerCLI = new ManagerCLI();
-        managerCLI.start(employee);
-        break;
-      case EmployeeType.ADMIN:
-        AdminCLI adminCLI = new AdminCLI(employee);
-        adminCLI.start();
-      default:
-        System.out.println("Employee Not Found!");
+    EmployeeService employeeService = new EmployeeService();
+
+    try {
+      Employee employee = employeeService.getEmployee(emailId, password);
+
+      switch (employee.getEmployeeType()) {
+        case EmployeeType.WAITER :
+          WaiterCLI waiterCLI = new WaiterCLI(employee);
+          waiterCLI.start();
+          break;
+        case EmployeeType.CHEF:
+          ChefCLI chefCLI = new ChefCLI();
+          chefCLI.chefMenu(employee);
+          break;
+        case EmployeeType.MANAGER:
+          ManagerCLI managerCLI = new ManagerCLI();
+          managerCLI.start(employee);
+          break;
+        case EmployeeType.ADMIN:
+          AdminCLI adminCLI = new AdminCLI(employee);
+          adminCLI.start();
+      }
+    } catch (EmployeeNotFoundException | PasswordIncorrectException exception) {
+      System.out.println(exception.getMessage());
     }
   }
+
+
 
 }

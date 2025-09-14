@@ -1,9 +1,9 @@
-package tech.zeta.entity;
+package tech.zeta.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.zeta.entity.enums.PaymentStatus;
+import tech.zeta.utils.enums.PaymentStatus;
 
 import java.time.LocalDateTime;
 

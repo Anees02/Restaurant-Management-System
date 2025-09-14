@@ -1,9 +1,9 @@
-package tech.zeta.entity;
+package tech.zeta.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.zeta.entity.enums.TableStatus;
+import tech.zeta.utils.enums.TableStatus;
 
 import java.time.LocalDateTime;
 
@@ -14,6 +14,6 @@ public class Table {
   private int tableId;
   private int tableCapacity;
   private TableStatus tableStatus;
-  private int customerId; // nullable when not booked
-  private LocalDateTime bookingTime; // when the table was booked
+  private int customerId;
+  private LocalDateTime bookingTime;
 }

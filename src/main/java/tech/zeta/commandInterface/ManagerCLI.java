@@ -1,15 +1,15 @@
 package tech.zeta.commandInterface;
 
 
-import tech.zeta.entity.Employee;
-import tech.zeta.entity.FoodItem;
-import tech.zeta.entity.Order;
-import tech.zeta.entity.OrderItem;
-import tech.zeta.entity.enums.ItemStatus;
+import tech.zeta.model.Employee;
+import tech.zeta.model.FoodItem;
+import tech.zeta.model.Order;
+import tech.zeta.model.OrderItem;
+import tech.zeta.utils.enums.ItemStatus;
 import tech.zeta.repository.FoodItemRepository;
 import tech.zeta.service.ManagerService;
 
-import java.time.LocalDateTime;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class ManagerCLI {
@@ -32,7 +32,14 @@ public class ManagerCLI {
       System.out.println("2. Record Payment");
       System.out.println("0. Exit");
       System.out.print("Enter choice: ");
-      int choice = scanner.nextInt();
+      int choice = -1;
+      try {
+        choice  = scanner.nextInt();
+      } catch (InputMismatchException exception) {
+        System.out.println("Please Enter Valid Input!");
+        scanner.nextLine();
+        continue;
+      }
       scanner.nextLine();
 
       switch (choice) {
@@ -49,7 +56,13 @@ public class ManagerCLI {
 
   private void generateBill() {
     System.out.print("Enter Table ID: ");
-    int tableId = scanner.nextInt();
+    int tableId = -1;
+    try {
+      tableId  = scanner.nextInt();
+    } catch (InputMismatchException exception) {
+      System.out.println("Please Enter Valid Input!");
+      return;
+    }
     scanner.nextLine();
 
     Integer orderId = managerService.getOrderIdForTable(tableId);
@@ -80,11 +93,24 @@ public class ManagerCLI {
   }
 
   private void recordPayment() {
-    System.out.print("Enter Order ID to record payment: ");
-    int orderId = scanner.nextInt();
+    System.out.print("Enter Table ID to record payment: ");
+    int tableId = -1;
+    try {
+      tableId  = scanner.nextInt();
+    } catch (InputMismatchException exception) {
+      System.out.println("Please Enter Valid Input!");
+      return;
+    }
     scanner.nextLine();
+    Integer orderId = managerService.getOrderIdForTable(tableId);
 
-    boolean success = managerService.makePayment(orderId);
+    if(orderId == null){
+      System.out.println("Please Enter a Table ID which is occupied!");
+      return;
+    }
+
+    boolean success = managerService.makePayment(orderId) && managerService.makeTableAvailable(tableId);
+
     if (success) {
       System.out.println("Payment recorded successfully for Order #" + orderId);
     } else {

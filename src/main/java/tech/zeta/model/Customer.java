@@ -1,11 +1,8 @@
-package tech.zeta.entity;
+package tech.zeta.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.sql.PreparedStatement;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor

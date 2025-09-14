@@ -1,14 +1,12 @@
 package tech.zeta.commandInterface;
 
 
-import tech.zeta.entity.Employee;
-import tech.zeta.entity.Order;
-import tech.zeta.entity.OrderItem;
-import tech.zeta.entity.enums.EmployeeType;
-import tech.zeta.entity.enums.ItemStatus;
-import tech.zeta.repository.OrderRepository;
+import tech.zeta.model.Employee;
+import tech.zeta.model.OrderItem;
+import tech.zeta.utils.enums.ItemStatus;
 import tech.zeta.service.ChefService;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -31,7 +29,15 @@ public class ChefCLI {
 
       System.out.print("Enter the choice: ");
 
-      int choice = scanner.nextInt();
+      int choice = 0;
+
+      try {
+        choice  = scanner.nextInt();
+      } catch (InputMismatchException exception) {
+        System.out.println("Please Enter Valid Input!");
+        scanner.nextLine();
+        continue;
+      }
 
       switch (choice) {
         case 1:
@@ -79,7 +85,14 @@ public class ChefCLI {
     printPendingOrderItems(pending);
 
     System.out.print("Enter item index to mark prepared: ");
-    int idx = scanner.nextInt();
+    int idx = -1;
+
+    try {
+      idx  = scanner.nextInt();
+    } catch (InputMismatchException exception) {
+      System.out.println("Please Enter Valid Input!");
+      return;
+    }
 
     if (idx < 0 || idx >= pending.size()) {
       System.out.println(" Invalid index.");

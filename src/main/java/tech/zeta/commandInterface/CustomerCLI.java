@@ -1,14 +1,21 @@
 package tech.zeta.commandInterface;
 
-import tech.zeta.entity.Customer;
-import tech.zeta.entity.FoodItem;
+import lombok.extern.slf4j.Slf4j;
+import tech.zeta.model.Customer;
+import tech.zeta.model.FoodItem;
+import tech.zeta.exception.CustomerNotFoundException;
+import tech.zeta.exception.PasswordIncorrectException;
 import tech.zeta.repository.FoodItemRepository;
+import tech.zeta.service.ChefService;
 import tech.zeta.service.CustomerService;
 import tech.zeta.service.TableService;
+import tech.zeta.utils.EmailValidator;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
+@Slf4j
 public class CustomerCLI {
   private final Scanner scanner = new Scanner(System.in);
   private final CustomerService customerService;
@@ -32,12 +39,19 @@ public class CustomerCLI {
     System.out.println("2. Register");
     System.out.println("3. Go Back");
     System.out.print("Choose option: ");
-    int choice = scanner.nextInt();
+    int choice = -1;
+    try {
+      choice = scanner.nextInt();
+    } catch (InputMismatchException exception) {
+      System.out.println("Please Enter Valid Input!");
+      scanner.nextLine();
+      return;
+    }
     scanner.nextLine();
 
     if (choice == 1) {
-      login();
-      customerMenuLoop();
+      if(login())
+        customerMenuLoop();
     }
     else if(choice == 2) {
       register();
@@ -45,18 +59,23 @@ public class CustomerCLI {
 
   }
 
-  private void login() {
+  private boolean login() {
     System.out.print("Enter Email: ");
     String email = scanner.nextLine();
+    if(!EmailValidator.isValid(email)){
+      System.out.println("Please Enter a Valid Email Id!");
+      return false;
+    }
     System.out.print("Enter Password: ");
     String password = scanner.nextLine();
-    currentCustomer = customerService.getCustomer(email, password);
-    if (currentCustomer == null) {
-      System.out.println("Customer not found, please register!");
-      register();
-    } else {
+    try {
+      currentCustomer = customerService.getCustomer(email, password);
       System.out.println("Welcome back, " + currentCustomer.getCustomerName() + "!");
+      return true;
+    } catch (PasswordIncorrectException | CustomerNotFoundException exception) {
+      System.out.println(exception.getMessage());
     }
+    return false;
   }
 
   private void register() {
@@ -66,6 +85,10 @@ public class CustomerCLI {
     String contact = scanner.nextLine();
     System.out.print("Enter Email: ");
     String email = scanner.nextLine();
+    if(!EmailValidator.isValid(email)){
+      System.out.println("Please Enter a Valid Email Id!");
+      return;
+    }
     System.out.print("Enter New Password: ");
     String password = scanner.nextLine();
 
@@ -86,7 +109,14 @@ public class CustomerCLI {
       System.out.println("2. Book Table Online");
       System.out.println("3. Exit");
       System.out.print("Choose option: ");
-      int choice = scanner.nextInt();
+      int choice = 0;
+      try {
+        choice  = scanner.nextInt();
+      } catch (InputMismatchException exception) {
+        System.out.println("Please Enter Valid Input!");
+        scanner.nextLine();
+        continue;
+      }
       scanner.nextLine();
 
       switch (choice) {
@@ -122,10 +152,19 @@ public class CustomerCLI {
     }
 
     System.out.print("Enter the Table Id to Book: ");
-    int tableId = scanner.nextInt();
+    int tableId = -1;
+    try {
+      tableId  = scanner.nextInt();
+    } catch (InputMismatchException exception) {
+      System.out.println("Please Enter Valid Input!");
+      return;
+    }
     if(tableService.bookTable(currentCustomer.getCustomerId(), tableId)){
       System.out.printf("Congrats %s, you have successfully booked the table with table id = %d%n",currentCustomer.getCustomerName(), tableId);
       System.out.println("See you in the restaurant!....");
+    }
+    else{
+      System.out.println("Sorry! the table is already booked, please try again!");
     }
 
   }

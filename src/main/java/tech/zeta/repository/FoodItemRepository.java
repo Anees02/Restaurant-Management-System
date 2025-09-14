@@ -1,7 +1,7 @@
 package tech.zeta.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import tech.zeta.entity.FoodItem;
+import tech.zeta.model.FoodItem;
 import tech.zeta.utils.DB.PostgresDBConnection;
 
 import java.sql.Connection;
@@ -11,6 +11,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Repository class for managing food items.
+ * Provides CRUD operations: get all items, get by ID, add, update, and remove food items.
+ * Singleton pattern is used to provide a single instance.
+ */
 @Slf4j
 public class FoodItemRepository {
   private static FoodItemRepository foodItemRepository;
@@ -18,6 +23,12 @@ public class FoodItemRepository {
   private FoodItemRepository(){
     connection = new PostgresDBConnection().getConnection();
   }
+
+  /**
+   * Retrieves the singleton instance of FoodItemRepository.
+   *
+   * @return the single instance of FoodItemRepository
+   */
   public static FoodItemRepository getInstance(){
     if(foodItemRepository == null){
       synchronized (FoodItemRepository.class){
@@ -29,6 +40,11 @@ public class FoodItemRepository {
     return foodItemRepository;
   }
 
+  /**
+   * Retrieves all food items from the database.
+   *
+   * @return a list of all FoodItem objects, or null if an error occurs
+   */
   public List<FoodItem> getAllItems(){
       String query = "SELECT food_id, food_name, price, is_available FROM FoodItem";
 
@@ -50,6 +66,12 @@ public class FoodItemRepository {
     return null;
   }
 
+  /**
+   * Retrieves a specific food item by its ID.
+   *
+   * @param foodItemId the ID of the food item
+   * @return the FoodItem object if found, otherwise null
+   */
   public FoodItem getFoodItemById(int foodItemId){
     String query = "SELECT food_id, food_name, price, is_available FROM FoodItem WHERE food_id = ?";
     FoodItem food = null;
@@ -72,6 +94,12 @@ public class FoodItemRepository {
     return food;
   }
 
+  /**
+   * Adds a new food item to the database.
+   *
+   * @param foodItem the FoodItem object to add
+   * @return true if the addition is successful, false otherwise
+   */
   public boolean addFoodItem(FoodItem foodItem){
     String sql = "INSERT INTO FoodItem (food_name, price, is_available) values (?, ?, ?)";
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -86,6 +114,14 @@ public class FoodItemRepository {
     }
   }
 
+  /**
+   * Updates the price and availability of an existing food item.
+   *
+   * @param foodId the ID of the food item to update
+   * @param newPrice the new price of the food item
+   * @param isAvailable the availability status of the food item
+   * @return true if the update is successful, false otherwise
+   */
   public boolean updateFoodItem(int foodId, double newPrice, boolean isAvailable){
     String sql = "update FoodItem set price = ?, is_available = ? where food_id = ?";
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -100,6 +136,12 @@ public class FoodItemRepository {
     }
   }
 
+  /**
+   * Removes a food item from the database.
+   *
+   * @param foodId the ID of the food item to remove
+   * @return true if the removal is successful, false otherwise
+   */
   public boolean removeFoodItem(int foodId) {
     String sql = "delete from FoodItem where food_id = ?";
     try (PreparedStatement ps = connection.prepareStatement(sql)) {
@@ -112,6 +154,9 @@ public class FoodItemRepository {
     }
   }
 
+  /**
+   * Closes the database connection used by this repository.
+   */
   public void closeConnection(){
     try {
       connection.close();

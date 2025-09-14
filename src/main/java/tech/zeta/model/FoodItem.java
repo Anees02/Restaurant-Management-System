@@ -1,4 +1,4 @@
-package tech.zeta.entity;
+package tech.zeta.model;
 
 
 import lombok.AllArgsConstructor;

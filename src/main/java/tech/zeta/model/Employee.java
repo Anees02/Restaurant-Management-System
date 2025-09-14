@@ -1,11 +1,9 @@
-package tech.zeta.entity;
+package tech.zeta.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import tech.zeta.entity.enums.EmployeeType;
-
-import java.util.UUID;
+import tech.zeta.utils.enums.EmployeeType;
 
 
 @Data

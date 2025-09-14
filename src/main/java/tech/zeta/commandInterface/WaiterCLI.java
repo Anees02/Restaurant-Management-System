@@ -1,12 +1,12 @@
 package tech.zeta.commandInterface;
 
-import tech.zeta.entity.Employee;
-import tech.zeta.entity.FoodItem;
-import tech.zeta.entity.Table;
+import tech.zeta.model.Employee;
+import tech.zeta.model.FoodItem;
 import tech.zeta.repository.FoodItemRepository;
 import tech.zeta.service.TableService;
 import tech.zeta.service.WaiterService;
 
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
@@ -27,10 +27,16 @@ public class WaiterCLI {
     while (true) {
       System.out.println("\n=== Waiter Menu ===");
       System.out.println("1. Take New Order");
-//      System.out.println("2. View Order Details");
       System.out.println("0. Exit");
       System.out.print("Choose: ");
-      int choice = scanner.nextInt();
+      int choice = -1;
+      try {
+        choice  = scanner.nextInt();
+      } catch (InputMismatchException exception) {
+        System.out.println("Please Enter Valid Input!");
+        scanner.nextLine();
+        continue;
+      }
       scanner.nextLine();
 
       switch (choice) {
@@ -47,7 +53,13 @@ public class WaiterCLI {
 
   private void takeNewOrder() {
     System.out.print("Enter Table ID: ");
-    int tableId = scanner.nextInt();
+    int tableId = -1;
+    try {
+      tableId  = scanner.nextInt();
+    } catch (InputMismatchException exception) {
+      System.out.println("Please Enter Valid Input!");
+      return;
+    }
 
     int customerId = tableService.giveCustomerId(tableId);
     if(customerId == -1){

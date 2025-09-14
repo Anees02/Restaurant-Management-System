@@ -1,7 +1,8 @@
 package tech.zeta.repository;
 
 import lombok.extern.slf4j.Slf4j;
-import tech.zeta.entity.Customer;
+import tech.zeta.model.Customer;
+import tech.zeta.exception.CustomerNotFoundException;
 import tech.zeta.utils.DB.PostgresDBConnection;
 
 import java.sql.Connection;
@@ -9,6 +10,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * Repository class for managing customer data.
+ * Provides methods to add new customers, fetch customers by email,
+ * and check if a user already exists.
+ * Throws CustomerNotFoundException if customer is not found.
+ * Singleton pattern is used to provide a single instance.
+ */
 @Slf4j
 public class CustomerRepository {
   private static CustomerRepository customerRepository;
@@ -17,6 +25,11 @@ public class CustomerRepository {
     DBConnection = new PostgresDBConnection().getConnection();
   }
 
+  /**
+   * Retrieves the singleton instance of CustomerRepository.
+   *
+   * @return the single instance of CustomerRepository
+   */
   public static CustomerRepository getInstance(){
     if(customerRepository == null){
       customerRepository = new CustomerRepository();
@@ -26,8 +39,12 @@ public class CustomerRepository {
   }
 
 
-
-
+  /**
+   * Adds a new customer to the database.
+   *
+   * @param customer the Customer object to add
+   * @return true if the customer is added successfully, false otherwise
+   */
   public boolean addCustomer(Customer customer){
     String insertQuery = "insert into customer(customerName, contactNumber, customerMailId, password) values (?,?,?,?);";
     try(PreparedStatement preparedStatement = DBConnection.prepareStatement(insertQuery)) {
@@ -45,7 +62,14 @@ public class CustomerRepository {
     return false;
   }
 
-  public Customer getCustomerByEmail(String emailId){
+  /**
+   * Fetches a customer by their email ID.
+   *
+   * @param emailId the email address of the customer
+   * @return the Customer object if found
+   * @throws CustomerNotFoundException if no customer is found with the given email
+   */
+  public Customer getCustomerByEmail(String emailId) throws CustomerNotFoundException {
     String checkQuery = "SELECT * FROM customer WHERE customerMailId = ?;";
 
     try(PreparedStatement preparedStatement = DBConnection.prepareStatement(checkQuery)){
@@ -69,9 +93,15 @@ public class CustomerRepository {
       log.error(sqlException.getMessage());
     }
 
-    return null;
+    throw new CustomerNotFoundException("Customer Not Found!");
   }
 
+  /**
+   * Checks if a customer already exists with the given email ID.
+   *
+   * @param mailId the email address to check
+   * @return true if a customer with the email already exists, false otherwise
+   */
   public boolean isUserAlreadyExists(String mailId){
     String checkQuery = "SELECT 1 FROM customer WHERE customerMailId = ?;";
 
@@ -91,6 +121,11 @@ public class CustomerRepository {
 
     return false;
   }
+
+
+  /**
+   * Closes the database connection used by this repository.
+   */
   public void closeConnection(){
     try {
       DBConnection.close();

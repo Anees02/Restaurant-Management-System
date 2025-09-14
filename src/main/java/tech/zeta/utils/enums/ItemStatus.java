@@ -1,4 +1,4 @@
-package tech.zeta.entity.enums;
+package tech.zeta.utils.enums;
 
 public enum ItemStatus {
   PENDING,

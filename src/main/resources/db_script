@@ -1,0 +1,86 @@
+
+CREATE TABLE Customer (
+    customerId SERIAL PRIMARY KEY,
+    customerName VARCHAR(100) NOT NULL,
+    contactNumber VARCHAR(15),
+    customerMailId VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE Employee (
+    employeeId SERIAL PRIMARY KEY,
+    employeeName VARCHAR(100) NOT NULL,
+    emailId VARCHAR(100) NOT NULL UNIQUE,
+    employeeType VARCHAR(20) NOT NULL CHECK (employeeType IN ('WAITER', 'CHEF', 'ADMIN', 'MANAGER')),
+    password VARCHAR(255) NOT NULL
+);
+
+CREATE TABLE FoodItem (
+    food_id SERIAL PRIMARY KEY,
+    food_name VARCHAR(100) NOT NULL,
+    price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
+    is_available BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE RestaurantTable (
+    tableId SERIAL PRIMARY KEY,
+    tableCapacity INT NOT NULL,
+    tableStatus VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE',
+    customerId INT,
+    booking_time TIMESTAMP,
+
+    CONSTRAINT fk_table_customer FOREIGN KEY (customerId) REFERENCES Customer(customerId)
+);
+
+CREATE TABLE Orders (
+    orderId SERIAL PRIMARY KEY,
+    tableId INT NOT NULL,
+    customerId INT NOT NULL,
+    orderTime TIMESTAMP NOT NULL DEFAULT NOW(),
+    paymentStatus VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    totalAmount NUMERIC(10,2) DEFAULT 0.0,
+
+    CONSTRAINT fk_orders_customer FOREIGN KEY (customerId) REFERENCES Customer(customerId),
+    CONSTRAINT fk_orders_table FOREIGN KEY (tableId) REFERENCES RestaurantTable(tableId)
+);
+
+CREATE TABLE OrderItem (
+    orderId INT NOT NULL,
+    foodId INT NOT NULL,
+    quantity INT NOT NULL,
+    quantityToPrepare INT NOT NULL DEFAULT 0,
+    price NUMERIC(10,2) NOT NULL CHECK (price >= 0),
+    itemStatus VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+
+    PRIMARY KEY (orderId, foodId),
+    CONSTRAINT fk_orderitem_order FOREIGN KEY (orderId) REFERENCES Orders(orderId) ON DELETE CASCADE,
+    CONSTRAINT fk_orderitem_food FOREIGN KEY (foodId) REFERENCES FoodItem(food_id) ON DELETE CASCADE
+);
+
+-- Insert sample employees
+INSERT INTO Employee (employeename, emailid, employeetype, password) VALUES
+('waiter1', 'waiter1@example.com', 'WAITER', 'pass123'),
+('Anees', 'anees@example.com', 'WAITER', 'pass123'),
+('Ali', 'ali@example.com', 'WAITER', 'pass123'),
+('Chef1', 'chef1@example.com', 'CHEF', 'chefpass'),
+('Chef2', 'chef2@example.com', 'CHEF', 'chefpass'),
+('Admin', 'admin@example.com', 'ADMIN', 'adminpass'),
+('Manager1', 'manager1@example.com', 'MANAGER', 'managerpass');
+
+-- Insert sample tables
+INSERT INTO RestaurantTable (tablecapacity, tablestatus) VALUES
+(4, 'AVAILABLE'),
+(2, 'AVAILABLE'),
+(6, 'AVAILABLE'),
+(2, 'AVAILABLE'),
+(2, 'AVAILABLE'),
+(4, 'AVAILABLE');
+
+-- Sample Data For FoodItem
+INSERT INTO FoodItem (food_name, price, is_available)
+VALUES
+  ('Veg Biryani', 180.00, TRUE),
+  ('Chicken Biryani', 250.00, TRUE),
+  ('Paneer Butter Masala', 200.00, TRUE),
+  ('Butter Naan', 50.00, TRUE),
+  ('Coke', 40.00, TRUE);

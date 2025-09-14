@@ -9,6 +9,11 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+/**
+ * Provides a connection to a PostgreSQL database using configuration
+ * from the `application.properties` file.
+ * Implements the DBConnection interface.
+ */
 @Slf4j
 public class PostgresDBConnection implements DBConnection {
   private Connection connection;
@@ -29,6 +34,11 @@ public class PostgresDBConnection implements DBConnection {
     }
   }
 
+  /**
+   * Returns the established database connection.
+   *
+   * @return the Connection object to the PostgreSQL database
+   */
   @Override
   public Connection getConnection() {
     return connection;
