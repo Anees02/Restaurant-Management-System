@@ -1,8 +1,9 @@
-package tech.zeta.commandInterface;
+package tech.zeta;
 
 
 
 import lombok.extern.slf4j.Slf4j;
+import tech.zeta.commandInterface.*;
 import tech.zeta.model.Employee;
 import tech.zeta.utils.enums.EmployeeType;
 import tech.zeta.exception.EmployeeNotFoundException;
@@ -23,13 +24,13 @@ public class Main {
     boolean loopBreakFlag = false;
 
     while(true) {
-      System.out.println("\n====== Welcome to Dilip's Internation Restaurant ======");
+      System.out.println("\n====== Welcome to Internation Restaurant ======");
       System.out.printf("Choose your login type:%n");
       System.out.printf("\t1. Customer%n\t2. Employee%n\t3. Exit%n");
       System.out.print("Please Enter the Option: ");
 
 
-        int option = -1;
+      int option = -1;
       try {
         option  = scanner.nextInt();
       } catch (InputMismatchException exception) {
